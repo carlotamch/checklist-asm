@@ -55,6 +55,13 @@ textarea {
   border-radius: 5px;
 }
 
+input[type="text"], input[type="date"] {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
 .buttons {
   position: sticky;
   bottom: 0;
@@ -81,6 +88,18 @@ button {
 
 <h1>Checklist ASM</h1>
 
+<!-- DATOS GENERALES -->
+<div class="section">
+  <div class="section-header">Datos de la visita</div>
+  <div class="section-content" style="display:block;">
+    <label><b>Nombre ASM:</b></label>
+    <input type="text" id="asm" placeholder="Introduce tu nombre">
+
+    <label><b>Fecha:</b></label>
+    <input type="date" id="fecha">
+  </div>
+</div>
+
 <div id="app"></div>
 
 <div class="buttons">
@@ -97,3 +116,101 @@ const data = {
 "Mercado": ["Tendencias agro","Matriculaciones","Cuota","Segmentos","Cobertura","Conversión"],
 "Competencia": ["Análisis >340CV","Actividad competencia"],
 "Finanzas": ["Crédito","On Hold","Pagos"],
+"Oportunidades": ["Objetivo","Ganadas/perdidas","Activas","Calientes","P20"],
+"Campañas": ["Circulares","Dudas","Estado","Acciones"],
+"Objetivos": ["Objetivo anual","Situación","Acciones","Prioridades"],
+"Actividad": ["Demos","Visitas","Operaciones"],
+"Cierre": ["Resumen","Acciones","Responsables"]
+};
+
+const app = document.getElementById("app");
+
+Object.keys(data).forEach(section => {
+  let div = document.createElement("div");
+  div.className = "section";
+
+  let content = `
+    <div class="section-header" onclick="toggle(this)">
+      ${section}
+    </div>
+    <div class="section-content">
+  `;
+
+  data[section].forEach(item => {
+    let id = section + item;
+    content += `
+      <label>
+        <input type="checkbox" id="${id}">
+        ${item}
+      </label>
+      <textarea id="txt_${id}" placeholder="Notas..."></textarea>
+    `;
+  });
+
+  content += `</div>`;
+  div.innerHTML = content;
+  app.appendChild(div);
+});
+
+// Toggle
+function toggle(el) {
+  const content = el.nextElementSibling;
+  content.style.display = content.style.display === "block" ? "none" : "block";
+}
+
+// Guardar
+function save() {
+  document.querySelectorAll("input, textarea").forEach(el => {
+    localStorage.setItem(el.id, el.type === "checkbox" ? el.checked : el.value);
+  });
+  alert("Guardado ✅");
+}
+
+// Cargar + Autocompletar fecha
+window.onload = function () {
+
+  const today = new Date().toISOString().split("T")[0];
+
+  document.querySelectorAll("input, textarea").forEach(el => {
+    const val = localStorage.getItem(el.id);
+    if (el.type === "checkbox") el.checked = val === "true";
+    else el.value = val || "";
+  });
+
+  if (!localStorage.getItem("fecha")) {
+    document.getElementById("fecha").value = today;
+  }
+};
+
+// Exportar CSV
+function exportCSV() {
+  let rows = [["ASM","Fecha","Sección","Item","Estado","Notas"]];
+
+  let asm = document.getElementById("asm").value;
+  let fecha = document.getElementById("fecha").value;
+
+  Object.keys(data).forEach(section => {
+    data[section].forEach(item => {
+      let id = section + item;
+      let check = document.getElementById(id).checked ? "Sí" : "No";
+      let txt = document.getElementById("txt_" + id).value;
+
+      rows.push([asm, fecha, section, item, check, txt]);
+    });
+  });
+
+  let csv = rows.map(e => e.join(";")).join("\n");
+
+  let blob = new Blob([csv], { type: "text/csv" });
+  let url = URL.createObjectURL(blob);
+
+  let a = document.createElement("a");
+  a.href = url;
+  a.download = "checklist_ASM.csv";
+  a.click();
+}
+
+</script>
+
+</body>
+</html>
