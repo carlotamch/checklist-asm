@@ -8,51 +8,72 @@
 <style>
 body {
   font-family: Arial;
-  padding: 10px;
-  background: #f2f2f2;
+  margin: 0;
+  background: #f4f6f8;
 }
 
 h1 {
   text-align: center;
+  padding: 15px;
+  background: #0078D4;
+  color: white;
 }
 
 .section {
   background: white;
-  padding: 15px;
-  margin-bottom: 15px;
+  margin: 10px;
   border-radius: 10px;
+  overflow: hidden;
 }
 
-.section h2 {
-  background: #0078D4;
-  color: white;
-  padding: 10px;
-  border-radius: 8px;
-  font-size: 16px;
+.section-header {
+  padding: 15px;
+  background: #e6f0fa;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.section-content {
+  display: none;
+  padding: 10px 15px;
 }
 
 label {
-  display: block;
+  display: flex;
+  align-items: center;
   margin: 8px 0;
+}
+
+input[type="checkbox"] {
+  margin-right: 10px;
 }
 
 textarea {
   width: 100%;
-  margin-top: 5px;
   margin-bottom: 10px;
   padding: 8px;
   border-radius: 5px;
 }
 
-.save {
-  width: 100%;
-  padding: 15px;
-  font-size: 16px;
-  background: #28a745;
-  color: white;
-  border: none;
-  border-radius: 10px;
+.buttons {
+  position: sticky;
+  bottom: 0;
+  background: white;
+  padding: 10px;
+  display: flex;
+  gap: 10px;
 }
+
+button {
+  flex: 1;
+  padding: 12px;
+  font-size: 14px;
+  border: none;
+  border-radius: 8px;
+}
+
+.save { background: #28a745; color: white; }
+.export { background: #0078D4; color: white; }
 </style>
 </head>
 
@@ -62,161 +83,17 @@ textarea {
 
 <div id="app"></div>
 
-<button class="save" onclick="save()">Guardar ✅</button>
+<div class="buttons">
+  <button class="save" onclick="save()">Guardar</button>
+  <button class="export" onclick="exportCSV()">Exportar Excel</button>
+</div>
 
 <script>
 
 const data = {
-
-"Visión Global": [
-"Situación general del concesionario",
-"NPS (Net Promoter Score)"
-],
-
-"Stock": [
-"Stock total y por segmentos",
-"Clasificación por antigüedad",
-"Plan salida stock (>90 días)"
-],
-
-"Pedidos pendientes": [
-"Pedidos vendidos y no vendidos",
-"Fechas llegada y ventas",
-"Pedidos pendientes",
-"Plan preventa no vendidas"
-],
-
-"Mercado local": [
-"Problemas y tendencias agro",
-"Matriculaciones",
-"Cuota de mercado",
-"Segmentos prioritarios",
-"Cobertura ventas",
-"Conversión ventas",
-"Análisis por potencia"
-],
-
-"Competencia": [
-"Análisis competencia >340CV",
-"Actividad competencia"
-],
-
-"Finanzas": [
-"Nivel utilización crédito",
-"Unidades On Hold",
-"Plan pagos"
-],
-
-"Oportunidades": [
-"Objetivo oportunidades",
-"Ganadas / perdidas",
-"Oportunidades activas",
-"Oportunidades por potencia",
-"Oportunidades calientes",
-"Priorización clientes",
-"Actualización P20"
-],
-
-"Campañas": [
-"Circulares revisadas",
-"Dudas aclaradas",
-"Estado campañas",
-"Acciones especiales"
-],
-
-"Objetivos y Plan": [
-"Objetivo anual",
-"Situación actual",
-"Acciones previstas",
-"Prioridades",
-"Bonus"
-],
-
-"Planes acción": [
-"Top 5 cuentas",
-"Estado cuentas",
-"Estrategia KA",
-"Oportunidades cosechadora",
-"Oportunidades eléctricos",
-"Reclamaciones"
-],
-
-"Actividad Comercial": [
-"Demos",
-"Plan demos",
-"Visitas clientes",
-"Operaciones",
-"Plan visitas ASM"
-],
-
-"Marketing": [
-"Eventos y ferias",
-"Acciones marketing",
-"Objetivos BSA"
-],
-
-"Formación": [
-"Necesidades",
-"Formaciones"
-],
-
-"Cierre": [
-"Resumen acuerdos",
-"Acciones",
-"Responsables",
-"Plazos",
-"Seguimiento"
-]
-
-};
-
-
-// CREAR UI
-const app = document.getElementById("app");
-
-Object.keys(data).forEach(section => {
-
-  const div = document.createElement("div");
-  div.className = "section";
-
-  let html = `<h2>${section}</h2>`;
-
-  data[section].forEach(item => {
-    const id = section + item;
-
-    html += `
-      <label>
-        <input type="checkbox" id="${id}">
-        ${item}
-      </label>
-      <textarea id="txt_${id}" placeholder="Notas..."></textarea>
-    `;
-  });
-
-  div.innerHTML = html;
-  app.appendChild(div);
-});
-
-
-// GUARDAR
-function save() {
-  document.querySelectorAll("input, textarea").forEach(el => {
-    localStorage.setItem(el.id, el.type === "checkbox" ? el.checked : el.value);
-  });
-  alert("Guardado ✅");
-}
-
-
-// CARGAR
-window.onload = function () {
-  document.querySelectorAll("input, textarea").forEach(el => {
-    const val = localStorage.getItem(el.id);
-    if (el.type === "checkbox") el.checked = val === "true";
-    else el.value = val || "";
-  });
-};
-
-</script>
-
-</body>
-</html>
+"Visión Global": ["Situación concesionario","NPS cliente"],
+"Stock": ["Stock total","Antigüedad","Plan salida (>90 días)"],
+"Pedidos": ["Vendidos/no vendidos","Fechas","Pendientes","Plan preventa"],
+"Mercado": ["Tendencias agro","Matriculaciones","Cuota","Segmentos","Cobertura","Conversión"],
+"Competencia": ["Análisis >340CV","Actividad competencia"],
+"Finanzas": ["Crédito","On Hold","Pagos"],
