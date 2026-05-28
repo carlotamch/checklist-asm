@@ -7,32 +7,40 @@
 
 <style>
 body {
-  font-family: Arial;
-  margin: 0;
-  background: #f4f6f8;
-  max-width: 600px;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   margin: auto;
+  max-width: 600px;
+  background: #f2f4f8;
 }
 
 h1 {
   text-align: center;
   padding: 15px;
-  background: #0078D4;
+  background: linear-gradient(90deg, #0078D4, #005A9E);
   color: white;
+  font-size: 20px;
 }
 
+/* Tarjetas */
 .section {
   background: white;
-  margin: 10px;
-  border-radius: 10px;
-  overflow: hidden;
+  margin: 12px;
+  border-radius: 14px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
 }
 
 .section-header {
   padding: 15px;
-  background: #e6f0fa;
+  font-weight: 600;
+  font-size: 16px;
   cursor: pointer;
-  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+}
+
+.section-header::after {
+  content: "▼";
+  font-size: 12px;
 }
 
 .section-content {
@@ -40,30 +48,37 @@ h1 {
   padding: 10px 15px;
 }
 
+/* Inputs */
+input, select, textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+/* Checkboxes grandes */
+input[type="checkbox"] {
+  transform: scale(1.5);
+  margin-right: 12px;
+}
+
 label {
   display: flex;
   align-items: center;
-  margin: 8px 0;
+  background: #f8f9fb;
+  padding: 12px;
+  margin-bottom: 6px;
+  border-radius: 10px;
 }
 
-input[type="checkbox"] {
-  margin-right: 10px;
-}
-
+/* Textarea */
 textarea {
-  width: 100%;
-  margin-bottom: 10px;
-  padding: 8px;
-  border-radius: 5px;
+  background: #fafafa;
 }
 
-input[type="text"], input[type="date"] {
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 10px;
-  border-radius: 5px;
-}
-
+/* Botones */
 .buttons {
   position: sticky;
   bottom: 0;
@@ -71,34 +86,52 @@ input[type="text"], input[type="date"] {
   padding: 10px;
   display: flex;
   gap: 10px;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
 }
 
 button {
   flex: 1;
-  padding: 12px;
-  font-size: 14px;
+  padding: 14px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
+  font-weight: bold;
 }
 
-.save { background: #28a745; color: white; }
-.export { background: #0078D4; color: white; }
+.save {
+  background: #28a745;
+  color: white;
+}
+
+.export {
+  background: #0078D4;
+  color: white;
+}
 </style>
+
 </head>
 
 <body>
 
 <h1>Checklist ASM</h1>
 
-<!-- DATOS GENERALES -->
+<!-- DATOS -->
 <div class="section">
-  <div class="section-header">Datos de la visita</div>
+  <div class="section-header" onclick="toggle(this)">Datos de la visita</div>
   <div class="section-content" style="display:block;">
-    <label><b>Nombre ASM:</b></label>
-    <input type="text" id="asm" placeholder="Introduce tu nombre">
+    
+    <label><b>ASM:</b></label>
+    <select id="asm" onchange="updateConcesionarios()">
+      <option value="">Seleccionar ASM</option>
+    </select>
+
+    <label><b>Concesionario:</b></label>
+    <select id="concesionario">
+      <option value="">Seleccionar concesionario</option>
+    </select>
 
     <label><b>Fecha:</b></label>
     <input type="date" id="fecha">
+
   </div>
 </div>
 
@@ -111,18 +144,57 @@ button {
 
 <script>
 
+// DATOS ASM
+const concesionariosData = {
+"José Pérez": ["Garaje Dulantzi S.L.","Maxideza S.L.","Sapesa","V. Sancho S.A."],
+"Augusto Vicente": ["Arlanza servicios generales S.L.","Basilio Peral S.L.","Maquinaria Agrícola segovia Noroeste S.L.","Maquinaria Agrícola Sial S.L.","Portugal"],
+"Mariano González": ["Agrícola del Jalón S.A.","Auto Agrisa, S.L.","Cuisine S.A.","Rufino Ojer S.L.","Sora Agroindustrial S.L.","Talleres Casares S.L.","Tractors Pelach 17 S.L.U."],
+"Federico Amigo": ["Agrocampo Albacete S.L.","Algein S.A.","Geancar Maquinaria S.A.","Grimasy Motor S.L.","Librado Maquinaria S.A."],
+"Juan Manuel Ruiz": ["Agrícola Miguel Valero S.L.","Agrimaquinaria chico S.L.","Alonso Maquinaria Don Benito S.L.","Carretero Maquinaria Agrícola S.A.","Masur Agrícola S.L."]
+};
+
+// Cargar ASM
+const asmSelect = document.getElementById("asm");
+Object.keys(concesionariosData).forEach(asm => {
+  let opt = document.createElement("option");
+  opt.value = asm;
+  opt.textContent = asm;
+  asmSelect.appendChild(opt);
+});
+
+// Actualizar concesionarios
+function updateConcesionarios() {
+  let asm = document.getElementById("asm").value;
+  let select = document.getElementById("concesionario");
+
+  select.innerHTML = "<option value=''>Seleccionar concesionario</option>";
+
+  if (asm && concesionariosData[asm]) {
+    concesionariosData[asm].forEach(c => {
+      let opt = document.createElement("option");
+      opt.value = c;
+      opt.textContent = c;
+      select.appendChild(opt);
+    });
+  }
+}
+
+// CHECKLIST COMPLETO
 const data = {
-"Visión Global": ["Situación concesionario","NPS cliente"],
-"Stock": ["Stock total","Antigüedad","Plan salida (>90 días)"],
-"Pedidos": ["Vendidos/no vendidos","Fechas","Pendientes","Plan preventa"],
-"Mercado": ["Tendencias agro","Matriculaciones","Cuota","Segmentos","Cobertura","Conversión"],
-"Competencia": ["Análisis >340CV","Actividad competencia"],
-"Finanzas": ["Crédito","On Hold","Pagos"],
-"Oportunidades": ["Objetivo","Ganadas/perdidas","Activas","Calientes","P20"],
-"Campañas": ["Circulares","Dudas","Estado","Acciones"],
-"Objetivos": ["Objetivo anual","Situación","Acciones","Prioridades"],
-"Actividad": ["Demos","Visitas","Operaciones"],
-"Cierre": ["Resumen","Acciones","Responsables"]
+"Visión Global 🌍": ["Situación general del concesionario"],
+"Stock 📦": ["Stock total por segmentos de potencia y maquinaria","Clasificación por Antigüedad","Plan salida para stock general y de >90 días"],
+"Pedidos 📝": ["Vendidos/no vendidos","Fechas de llegada previstas","Pendientes","Plan preventa para unidades no vendidas"],
+"Mercado 📊": ["Tendencias del sector agro","Matriculaciones","Cuota de mercado","Segmentos prioritarios identificados","Cobertura de ventas total y por vendedor","Conversión total y por vendedor"],
+"Competencia 🏁": ["Análisis modelos donde crece anormalmente la competencia","Actividad competencia"],
+"Finanzas 💰": ["Crédito","Unidades On Hold","Plan de Pagos previsto"],
+"Oportunidades 🔥": ["Objetivo","Ganadas/perdidas y contra quién","Oportunidades Activas y estado","Oportunidades Calientes (<30 días)","Actualizar P20"],
+"Campañas 📢": ["Circulares revisadas","Dudas","Estado de campañas activas y en preparación","Acciones especiales"],
+"Objetivos 🎯": ["Objetivo anual","Situación actual","Acciones previstas","Prioridades comerciales", "cálculo del Bonus"],
+"Planes de Acción": ["Top5 KA", "Estado de cada cuenta","Estrategias diferenciales para KA", "oportunidades de cosecha", "oportunidades de eléctricos", "seguimiento de reclamaciones"]
+"Actividad 🚜": ["Demos realizadas","Plan de Demostraciones","Visitas con vendedores (a KA, oportunidades calientes y Clientes que no han comprado en los últimos 5 años","Operaciones acompañadas por ASM", "Plan de visitas conjuntas ASM +comercial"],
+"Marketing": ["Eventos, ferias previstas y acciones de marketing locales e impacto esperado", "Revisión de objetivos BSA y reporte de resultados", "NPS"]
+"Formación de equipo": ["Necesidades detectadas", "formaciones planificadas y propuestas"]
+"Cierre ✅": ["Resumen","Acciones","Responsables"]
 };
 
 const app = document.getElementById("app");
@@ -131,16 +203,13 @@ Object.keys(data).forEach(section => {
   let div = document.createElement("div");
   div.className = "section";
 
-  let content = `
-    <div class="section-header" onclick="toggle(this)">
-      ${section}
-    </div>
-    <div class="section-content">
-  `;
+  let html = `<div class="section-header" onclick="toggle(this)">${section}</div>
+              <div class="section-content">`;
 
   data[section].forEach(item => {
     let id = section + item;
-    content += `
+
+    html += `
       <label>
         <input type="checkbox" id="${id}">
         ${item}
@@ -149,46 +218,49 @@ Object.keys(data).forEach(section => {
     `;
   });
 
-  content += `</div>`;
-  div.innerHTML = content;
+  html += "</div>";
+  div.innerHTML = html;
   app.appendChild(div);
 });
 
 // Toggle
 function toggle(el) {
-  const content = el.nextElementSibling;
-  content.style.display = content.style.display === "block" ? "none" : "block";
+  let c = el.nextElementSibling;
+  c.style.display = c.style.display === "block" ? "none" : "block";
 }
 
-// Guardar
+// Guardado
 function save() {
-  document.querySelectorAll("input, textarea").forEach(el => {
-    localStorage.setItem(el.id, el.type === "checkbox" ? el.checked : el.value);
+  document.querySelectorAll("input, textarea, select").forEach(el => {
+    localStorage.setItem(el.id, el.value);
   });
   alert("Guardado ✅");
 }
 
-// Cargar + Autocompletar fecha
-window.onload = function () {
+// Cargar + fecha
+window.onload = function() {
 
   const today = new Date().toISOString().split("T")[0];
 
-  document.querySelectorAll("input, textarea").forEach(el => {
-    const val = localStorage.getItem(el.id);
-    if (el.type === "checkbox") el.checked = val === "true";
-    else el.value = val || "";
+  document.querySelectorAll("input, textarea, select").forEach(el => {
+    let val = localStorage.getItem(el.id);
+    if (val) el.value = val;
   });
 
   if (!localStorage.getItem("fecha")) {
     document.getElementById("fecha").value = today;
   }
+
+  updateConcesionarios();
 };
 
-// Exportar CSV
+// Export Excel
 function exportCSV() {
-  let rows = [["ASM","Fecha","Sección","Item","Estado","Notas"]];
+
+  let rows = [["ASM","Concesionario","Fecha","Sección","Item","Estado","Notas"]];
 
   let asm = document.getElementById("asm").value;
+  let concesionario = document.getElementById("concesionario").value;
   let fecha = document.getElementById("fecha").value;
 
   Object.keys(data).forEach(section => {
@@ -197,7 +269,7 @@ function exportCSV() {
       let check = document.getElementById(id).checked ? "Sí" : "No";
       let txt = document.getElementById("txt_" + id).value;
 
-      rows.push([asm, fecha, section, item, check, txt]);
+      rows.push([asm, concesionario, fecha, section, item, check, txt]);
     });
   });
 
